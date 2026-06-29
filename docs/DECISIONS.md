@@ -43,3 +43,22 @@ Postgres + Storage and Recharts to be introduced in later slices.
 - Added `types/styles.d.ts` (`declare module "*.css";`) — TypeScript 6 enforces
   side-effect import resolution and Next ships no bare `*.css` declaration.
 - Prettier excludes `*.md` so hand-written docs are not auto-reformatted.
+
+## 2026-06-29 — Slice 1 (database & schema)
+
+- Schema lives in `lib/db/schema.ts` (5 tables + 4 enums). Initial migration
+  generated to `drizzle/0000_silent_black_cat.sql` via `drizzle-kit generate`.
+- **Drivers:** `postgres-js` for production against Supabase (`prepare: false`
+  for the PgBouncer transaction pooler); **PGlite** (`@electric-sql/pglite`) for
+  in-process integration tests — no Docker or credentials — applying the *same*
+  migration so tests exercise the real schema.
+- Schema notes beyond the PRD data model:
+  - `review_status` modeled as enum `['unreviewed','reviewed']` (PRD left the
+    values open).
+  - `manual_entries` gained `created_at`/`updated_at` for auditing.
+  - `items` has no currency column; single-currency GBP is applied app-wide.
+- **Unified spend** remains planned for Milestone 3: documented in `schema.ts`
+  as a view UNIONing receipt totals with non-itemized `manual_entries` amounts.
+- DB scripts added: `db:generate`, `db:migrate`, `db:push`, `db:studio`.
+- Verified via PGlite round-trip: receipt+items, **null `receipt_id` manual
+  item (D3)**, payday cycle + manual entry, and a `jsonb` insight payload.

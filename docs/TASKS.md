@@ -7,8 +7,8 @@ Slice 2 app shell (nav + theme) → Slice 3 manual entry (E2E) → Slice 4 recei
 
 - [x] Initialise app scaffold. _(Slice 0)_
 - [x] Set up TypeScript, linting, and formatting. _(Slice 0)_
-- [ ] Configure database and ORM.
-- [ ] Create initial schema for receipts, items, manual entries, payday cycles, and insights.
+- [x] Configure database and ORM. _(Slice 1 — Drizzle + Supabase Postgres)_
+- [x] Create initial schema for receipts, items, manual entries, payday cycles, and insights. _(Slice 1)_
 - [ ] Add receipt image upload flow.
 - [ ] Add manual purchase entry form.
 - [ ] Create base layout with mobile-first navigation.

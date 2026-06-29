@@ -7,3 +7,6 @@ package-lock.json
 
 # Hand-written prose docs — not auto-formatted
 *.md
+
+# Generated Drizzle migrations and snapshots
+drizzle
