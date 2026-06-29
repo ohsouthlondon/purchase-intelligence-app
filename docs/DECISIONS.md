@@ -132,3 +132,52 @@ the existing `manual_entries`/`items` tables).
   `/capture/manual` prerendered), Playwright 5/5. Successful save-to-DB is
   covered by the integration test, not e2e, because the test env has no
   `DATABASE_URL` (same approach as Slice 1).
+
+## 2026-06-29 — Slice 4 (receipt image upload)
+
+Upload-and-persist-only slice. **No OCR, parsing, or review flow** (Milestone 2);
+no auth; no dashboards; **no schema changes** (used the existing `receipts`
+columns `source_image_url` / `ocr_status` / `review_status`).
+
+- **D12 — Stored image reference & private bucket.** The uploaded object is
+  written to a **private** Supabase Storage bucket under a key `<uuid>.<ext>`,
+  and `receipts.source_image_url` stores the bucket-qualified path
+  `"<bucket>/<key>"` (not a public URL). Rationale: there is no screen that
+  displays receipt images yet (review/display is Milestone 2), and financial
+  receipts should not be world-readable. Signed-URL generation is deferred to
+  when a reader needs it. A fresh receipt is persisted with `ocr_status =
+  'pending'` and otherwise-null merchant/date/totals — those are filled by the
+  Milestone 2 parsing/review flow.
+- **D13 — Storage via an injectable port + a thin REST adapter (no SDK).**
+  `lib/receipts/storage.ts` defines a `ReceiptStorage` port; `service.ts`
+  depends on it so production uses Supabase Storage while the integration test
+  injects an in-memory fake (mirrors D11's injectable `AppDb`). The production
+  adapter (`supabase-storage.ts`) performs a single REST `POST` to the Storage
+  API with `fetch` rather than pulling in `@supabase/supabase-js`, keeping the
+  dependency footprint at zero for a one-operation feature. Swapping to the SDK
+  later is a localized change behind the port. **No deps added.**
+- **Server-side upload only.** The client form posts the raw `File` via
+  `FormData` to the Server Action; the upload runs server-side with the
+  **service-role key** (`SUPABASE_SERVICE_ROLE_KEY`), so secrets never reach the
+  browser. This deliberately diverges from D10 (manual entry uses a plain
+  object): a single binary file's natural carrier is `FormData`.
+- **Ordering / failure mode.** The image is uploaded **before** the row is
+  inserted, so a storage failure leaves no dangling receipt (proven by test).
+  A DB failure after a successful upload can orphan an object — an acceptable,
+  low-frequency trade-off for a single-user app; a storage-cleanup pass is a
+  later concern.
+- **Validation (D6).** Boundary Zod schema accepts only JPEG/PNG/WebP, rejects
+  empty/oversized (>10 MB) and missing files.
+- **Layering:** `lib/receipts/{schema,records,storage,supabase-storage,service}.ts`
+  separate validation, pure row/object-key building, the storage port, the
+  Supabase adapter, and DB access.
+- **Env:** documented `SUPABASE_URL` (server-side, falls back to
+  `NEXT_PUBLIC_SUPABASE_URL`) in `.env.example` alongside the existing
+  `SUPABASE_SERVICE_ROLE_KEY` / `SUPABASE_RECEIPTS_BUCKET` placeholders.
+- **Verification:** Vitest 55/55 (schema accept/reject, record/object-key
+  builders, form behavior with mocked action, **PGlite integration** proving a
+  `pending` `receipts` row is written + bytes/content-type reach storage + no
+  row on storage failure), `next lint` clean, `prettier --check` clean,
+  `next build` OK (10 routes, `/capture/receipt` prerendered), Playwright 7/7.
+  Real Supabase upload is verified manually/deferred because the test env has no
+  Supabase credentials (same rationale as Slices 1 & 3).

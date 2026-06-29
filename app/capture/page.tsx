@@ -30,18 +30,18 @@ export default function CapturePage() {
           </Link>
         </li>
         <li>
-          <div
-            aria-disabled="true"
-            className="flex items-start gap-3 rounded-lg border border-dashed border-neutral-200 p-4 opacity-60 dark:border-neutral-800"
+          <Link
+            href="/capture/receipt"
+            className="flex items-start gap-3 rounded-lg border border-neutral-200 p-4 transition-colors hover:border-neutral-400 hover:bg-neutral-50 dark:border-neutral-800 dark:hover:border-neutral-600 dark:hover:bg-neutral-900"
           >
             <FileText className="mt-0.5 h-5 w-5 shrink-0" aria-hidden="true" />
             <span className="flex flex-col gap-0.5">
               <span className="text-sm font-medium">Upload receipt</span>
               <span className="text-xs text-neutral-500 dark:text-neutral-400">
-                Coming in Slice 4.
+                Add a receipt photo to parse later.
               </span>
             </span>
-          </div>
+          </Link>
         </li>
       </ul>
     </section>
