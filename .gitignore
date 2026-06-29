@@ -6,3 +6,12 @@ dist
 build
 coverage
 .DS_Store
+
+# next typescript
+next-env.d.ts
+*.tsbuildinfo
+
+# test artifacts
+/test-results
+/playwright-report
+/playwright/.cache

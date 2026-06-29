@@ -2,8 +2,11 @@
 
 ## Milestone 1: Foundation
 
-- [ ] Initialise app scaffold.
-- [ ] Set up TypeScript, linting, and formatting.
+Delivered in slices: Slice 0 scaffold/tooling → Slice 1 DB & schema →
+Slice 2 app shell (nav + theme) → Slice 3 manual entry (E2E) → Slice 4 receipt upload.
+
+- [x] Initialise app scaffold. _(Slice 0)_
+- [x] Set up TypeScript, linting, and formatting. _(Slice 0)_
 - [ ] Configure database and ORM.
 - [ ] Create initial schema for receipts, items, manual entries, payday cycles, and insights.
 - [ ] Add receipt image upload flow.
