@@ -11,8 +11,8 @@ Slice 2 app shell (nav + theme) → Slice 3 manual entry (E2E) → Slice 4 recei
 - [x] Create initial schema for receipts, items, manual entries, payday cycles, and insights. _(Slice 1)_
 - [ ] Add receipt image upload flow.
 - [ ] Add manual purchase entry form.
-- [ ] Create base layout with mobile-first navigation.
-- [ ] Add dark and light mode support.
+- [x] Create base layout with mobile-first navigation. _(Slice 2)_
+- [x] Add dark and light mode support. _(Slice 2)_
 
 ## Milestone 2: Parsing workflow
 

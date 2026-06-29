@@ -62,3 +62,31 @@ Postgres + Storage and Recharts to be introduced in later slices.
 - DB scripts added: `db:generate`, `db:migrate`, `db:push`, `db:studio`.
 - Verified via PGlite round-trip: receipt+items, **null `receipt_id` manual
   item (D3)**, payday cycle + manual entry, and a `jsonb` insight payload.
+
+## 2026-06-29 — Slice 2 (app shell: nav + theme)
+
+App-shell-only slice. No business logic, data access, or schema changes.
+
+- **Nav structure:** five top-level destinations defined once in
+  `lib/navigation.ts` (`NAV_ITEMS`): Inbox `/`, Dashboard `/dashboard`,
+  Capture `/capture`, Insights `/insights`, Settings `/settings`. `/capture`
+  is a placeholder hub that Slice 3 (manual entry) and Slice 4 (receipt upload)
+  will fill. `/dashboard` → Milestone 3, `/insights` → Milestone 4.
+- **Mobile-first nav:** single fixed bottom tab bar (`components/app-nav.tsx`),
+  centered with a `max-w-md` so it also reads well on desktop — deliberately no
+  separate desktop sidebar (single-user tool, KISS, avoids a second nav to keep
+  in sync). Active route via `usePathname()` + `isActiveRoute()` (root matches
+  exactly; sections match nested paths).
+- **D7 — Theme: `next-themes`** (`attribute="class"`, `defaultTheme="system"`,
+  `enableSystem`) over a hand-rolled script — battle-tested, handles SSR,
+  persistence, system sync, and no flash of wrong theme. `<html>` carries
+  `suppressHydrationWarning`. Tailwind v4 needs the class strategy enabled in
+  CSS, so `app/globals.css` adds
+  `@custom-variant dark (&:where(.dark, .dark *))`.
+- **Icons:** `lucide-react` (tree-shakeable) instead of hand-maintained SVGs.
+- **Deps added:** `next-themes`, `lucide-react`. No schema changes.
+- **Verification:** `prettier --check` clean, `next lint` clean, Vitest 15/15
+  (incl. new `tests/unit/navigation.test.ts`), `next build` succeeds with all 6
+  routes prerendered static, Playwright e2e 3/3 (home brand+inbox, bottom-nav
+  routing, theme toggle flipping `.dark` on `<html>`). Installed the Playwright
+  chromium binary to run e2e locally.

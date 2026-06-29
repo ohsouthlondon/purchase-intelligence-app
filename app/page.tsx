@@ -1,12 +1,11 @@
+import { PlaceholderScreen } from "@/components/placeholder-screen";
+
 export default function HomePage() {
   return (
-    <main className="mx-auto flex min-h-screen max-w-md flex-col items-center justify-center gap-4 px-6 text-center">
-      <h1 className="text-2xl font-semibold tracking-tight">
-        Purchase Intelligence
-      </h1>
-      <p className="text-sm text-neutral-500 dark:text-neutral-400">
-        Milestone 1 · Slice 0 — project scaffold is up and running.
-      </p>
-    </main>
+    <PlaceholderScreen
+      title="Inbox"
+      description="Your captured receipts and manual entries will collect here for review."
+      milestone="Capture flows arrive in Slices 3–4"
+    />
   );
 }
