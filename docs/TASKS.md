@@ -10,7 +10,7 @@ Slice 2 app shell (nav + theme) → Slice 3 manual entry (E2E) → Slice 4 recei
 - [x] Configure database and ORM. _(Slice 1 — Drizzle + Supabase Postgres)_
 - [x] Create initial schema for receipts, items, manual entries, payday cycles, and insights. _(Slice 1)_
 - [ ] Add receipt image upload flow.
-- [ ] Add manual purchase entry form.
+- [x] Add manual purchase entry form. _(Slice 3 — Server Action + Zod, non-itemized & itemized)_
 - [x] Create base layout with mobile-first navigation. _(Slice 2)_
 - [x] Add dark and light mode support. _(Slice 2)_
 

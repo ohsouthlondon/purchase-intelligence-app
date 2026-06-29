@@ -90,3 +90,45 @@ App-shell-only slice. No business logic, data access, or schema changes.
   routes prerendered static, Playwright e2e 3/3 (home brand+inbox, bottom-nav
   routing, theme toggle flipping `.dark` on `<html>`). Installed the Playwright
   chromium binary to run e2e locally.
+
+## 2026-06-29 — Slice 3 (manual purchase entry)
+
+Manual-entry-only slice. No OCR, auth, or dashboards; no schema changes (used
+the existing `manual_entries`/`items` tables).
+
+- **D8 — Persistence model.** Every manual purchase is one `manual_entries`
+  row. A non-itemized ("total only") entry stores the entered total with
+  `itemized_flag = false`. An itemized entry stores a header row with
+  `itemized_flag = true` and `amount` = the fp-safe sum of line prices, **plus**
+  one `items` row per line (`receipt_id = NULL`, `source_type = 'manual'`), per
+  D3. Items have no FK to the header (schema unchanged); they carry denormalized
+  merchant/category/purchase datetime so item-level analytics work standalone.
+- **D8a — Unified-spend contract (reaffirms D3).** The future Milestone 3 view
+  must sum `receipts.total` + `manual_entries.amount WHERE itemized_flag=false`
+  + `items.price WHERE source_type='manual'`. Itemized headers are **excluded**
+  from the manual-amount arm so itemized spend is counted once (via items).
+- **D9 — Date-only capture stored at noon UTC.** The form captures a calendar
+  date; it is persisted as `T12:00:00.000Z` so the displayed Europe/London day
+  is stable across GMT/BST (consistent with D4: store UTC, display London).
+- **D10 — Server Action takes a plain object, not FormData.** The client form
+  builds a serializable payload (incl. the nested items array) and calls
+  `submitManualEntry(input: unknown)`, which Zod-validates at the boundary
+  before any write. Avoids brittle indexed-FormData parsing for the dynamic
+  item list. Money is validated as positive with ≤2dp and stored as a 2dp
+  string for `NUMERIC(12,2)`.
+- **D11 — Injectable db type.** `lib/db/client.ts` exports `AppDb` so
+  `createManualEntry(db, input)` runs against Supabase in production and an
+  in-process PGlite instance in integration tests. Itemized writes use a
+  transaction so a partial purchase can never persist.
+- **Layering:** `lib/manual-entry/{schema,records,service}.ts` separate
+  validation, pure row-building (deterministic, unit-tested), and DB access.
+- **Categories:** free-text input backed by a `<datalist>` of
+  `DEFAULT_CATEGORIES` (custom values allowed, per D5).
+- **Deps added:** `zod`. No schema/migration changes.
+- **Verification:** Vitest 40/40 (Zod accept/reject, record builder incl.
+  fp-safe sum + null `receipt_id` + noon-UTC, form mode toggle/add-remove/
+  mocked submit, **PGlite integration** proving the real persistence path),
+  `next lint` clean, `prettier --check` clean, `next build` OK (9 routes,
+  `/capture/manual` prerendered), Playwright 5/5. Successful save-to-DB is
+  covered by the integration test, not e2e, because the test env has no
+  `DATABASE_URL` (same approach as Slice 1).

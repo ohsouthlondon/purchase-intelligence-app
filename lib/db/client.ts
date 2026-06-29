@@ -4,6 +4,13 @@ import * as schema from "./schema";
 
 type Database = ReturnType<typeof createDb>;
 
+/**
+ * Shared Drizzle database type. Exported so data-access functions can accept an
+ * injectable db (production via {@link getDb}, tests via an in-process PGlite
+ * instance) instead of reaching for the singleton directly.
+ */
+export type AppDb = Database;
+
 let sql: ReturnType<typeof postgres> | undefined;
 let database: Database | undefined;
 
