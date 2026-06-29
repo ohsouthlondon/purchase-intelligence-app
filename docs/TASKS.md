@@ -16,12 +16,19 @@ Slice 2 app shell (nav + theme) → Slice 3 manual entry (E2E) → Slice 4 recei
 
 ## Milestone 2: Parsing workflow
 
-- [ ] Integrate OCR/parsing service.
-- [ ] Build parsed receipt review screen.
-- [ ] Allow merchant/date/total editing.
+In slices: Slice 1 parse seam (stub) + header-only review scaffold →
+Slice 2 real OCR provider behind the seam → later slice line-item correction.
+
+- [ ] Integrate OCR/parsing service. _(Slice 1: parser seam + Zod-validated
+      contract + deterministic stub landed; real provider is Slice 2)_
+- [x] Build parsed receipt review screen. _(Slice 1 — header-only scaffold;
+      line items read-only)_
+- [x] Allow merchant/date/total editing. _(Slice 1)_
 - [ ] Allow line-item correction and deletion.
-- [ ] Save reviewed receipt and item rows.
-- [ ] Add failed parse handling.
+- [x] Save reviewed receipt and item rows. _(Slice 1 — items persisted at parse;
+      review saves the header and marks the receipt reviewed)_
+- [x] Add failed parse handling. _(Slice 1 — parser/validation failure sets
+      `ocr_status='failed'` + reason note, writes no items)_
 
 ## Milestone 3: Dashboard
 

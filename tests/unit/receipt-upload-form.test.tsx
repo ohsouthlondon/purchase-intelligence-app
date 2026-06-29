@@ -9,6 +9,11 @@ vi.mock("@/app/capture/receipt/actions", () => ({
   submitReceiptUpload: vi.fn(),
 }));
 
+const pushMock = vi.fn();
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: pushMock }),
+}));
+
 const submitMock = vi.mocked(submitReceiptUpload);
 
 // jsdom does not implement object URLs; stub them for the preview path.
@@ -20,6 +25,7 @@ beforeAll(() => {
 afterEach(() => {
   cleanup();
   submitMock.mockReset();
+  pushMock.mockReset();
 });
 
 function pngFile(name = "receipt.png"): File {
@@ -34,11 +40,12 @@ describe("ReceiptUploadForm", () => {
     ).toBeDisabled();
   });
 
-  it("uploads the selected file and shows the success message", async () => {
+  it("uploads the selected file and navigates to its review page", async () => {
     const user = userEvent.setup();
     submitMock.mockResolvedValue({
       status: "success",
       message: "Receipt uploaded.",
+      receiptId: "abc-123",
     });
     render(<ReceiptUploadForm />);
 
@@ -53,7 +60,7 @@ describe("ReceiptUploadForm", () => {
     const sent = formData.get("image");
     expect(sent).toBeInstanceOf(File);
     expect((sent as File).name).toBe("receipt.png");
-    expect(await screen.findByText("Receipt uploaded.")).toBeInTheDocument();
+    expect(pushMock).toHaveBeenCalledWith("/capture/receipt/abc-123/review");
   });
 
   it("surfaces a server-side image error", async () => {
@@ -71,5 +78,6 @@ describe("ReceiptUploadForm", () => {
     expect(
       await screen.findByText("Use a JPEG, PNG, or WebP image."),
     ).toBeInTheDocument();
+    expect(pushMock).not.toHaveBeenCalled();
   });
 });

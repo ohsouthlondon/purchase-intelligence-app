@@ -19,6 +19,7 @@ import { createSupabaseReceiptStorage } from "@/lib/receipts/supabase-storage";
 export interface ReceiptUploadActionResult {
   status: "success" | "error";
   message: string;
+  receiptId?: string;
   fieldErrors?: Record<string, string[] | undefined>;
 }
 
@@ -37,11 +38,13 @@ export async function submitReceiptUpload(
     };
   }
 
+  let receiptId: string;
   try {
-    await createReceiptUpload(
+    const created = await createReceiptUpload(
       { db: getDb(), storage: createSupabaseReceiptStorage() },
       parsed.data,
     );
+    receiptId = created.receiptId;
   } catch (error) {
     console.error("Failed to upload receipt", error);
     return {
@@ -53,5 +56,5 @@ export async function submitReceiptUpload(
   // The Inbox (and later dashboards) read this data; refresh their caches.
   revalidatePath("/");
 
-  return { status: "success", message: "Receipt uploaded." };
+  return { status: "success", message: "Receipt uploaded.", receiptId };
 }

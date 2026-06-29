@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 
 import {
   submitReceiptUpload,
@@ -27,6 +28,7 @@ export function ReceiptUploadForm() {
   const [result, setResult] = useState<ReceiptUploadActionResult | null>(null);
   const [isPending, startTransition] = useTransition();
   const inputRef = useRef<HTMLInputElement>(null);
+  const router = useRouter();
 
   const imageError =
     result?.status === "error" ? result.fieldErrors?.image?.[0] : undefined;
@@ -65,7 +67,12 @@ export function ReceiptUploadForm() {
     startTransition(async () => {
       const actionResult = await submitReceiptUpload(formData);
       setResult(actionResult);
-      if (actionResult.status === "success") resetForm();
+      if (actionResult.status === "success") {
+        resetForm();
+        if (actionResult.receiptId) {
+          router.push(`/capture/receipt/${actionResult.receiptId}/review`);
+        }
+      }
     });
   }
 

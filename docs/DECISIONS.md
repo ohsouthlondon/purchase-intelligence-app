@@ -181,3 +181,63 @@ columns `source_image_url` / `ocr_status` / `review_status`).
   `next build` OK (10 routes, `/capture/receipt` prerendered), Playwright 7/7.
   Real Supabase upload is verified manually/deferred because the test env has no
   Supabase credentials (same rationale as Slices 1 & 3).
+
+## 2026-06-29 — Milestone 2, Slice 1 (parse seam + review scaffold)
+
+Narrowest Milestone 2 seam: turn a `pending` upload into a `parsed` then
+`reviewed` receipt. **No real OCR provider, no line-item editing, no analytics,
+no auth. No schema changes** — the existing `receipts`/`items` columns and the
+`ocr_status`/`review_status` enums already cover it.
+
+- **D14 — Parser seam + stub now, real provider in Slice 2.** `ReceiptParser`
+  (`lib/receipts/parsing/parser.ts`) is an injectable port mirroring `AppDb`
+  (D11) and `ReceiptStorage` (D13). Slice 1 ships a deterministic
+  `createStubReceiptParser` that returns fixed, internally consistent data
+  **without reading the image** — it exercises the whole parse → review → save
+  path deterministically and must not ship as production. The real provider
+  (Claude vision / Textract / Mindee / …) drops in behind the same seam in
+  Slice 2; that is also when `ReceiptStorage` gains an image `download`/signed-
+  URL method (not needed by the stub, so deferred).
+- **D15 — Validate parser output at the boundary before persistence.**
+  `parsedReceiptSchema` (Zod) validates the untrusted parser result — types,
+  money precision (≤2dp), confidence ∈ [0,1], real calendar dates — and the
+  pipeline persists nothing until it passes. Invalid output is treated as a
+  parse failure.
+- **D16 — Persist parsed items at parse time, gated by status; transactional
+  re-parse.** On a successful parse the receipt header is updated
+  (`ocr_status='parsed'`) **and** one `items` row per line is inserted
+  (`source_type='receipt'`). Re-parsing replaces prior receipt-sourced items:
+  header update + `DELETE … WHERE receipt_id=? AND source_type='receipt'` +
+  reinsert all run **inside one transaction**, so a re-parse can never leave
+  deleted-but-not-reinserted state. Milestone 3 analytics must count only
+  reviewed/final receipts (status-gated), so parsed-but-unreviewed rows don't
+  inflate spend.
+- **D17 — Header-only review scaffold.** The review screen edits merchant,
+  date, subtotal/total/tax, and notes; parsed line items are shown read-only.
+  Line-item correction/deletion, "mark as noise", and syncing item denormalized
+  merchant/date to header edits are deferred to a later Milestone 2 slice
+  (harmless now: no analytics consume the data yet).
+- **D18 — Status lifecycle.** `pending` (upload) → `parsed` (pipeline) →
+  `reviewed` (save). `failed` for parse/validation errors (reason stored in
+  `receipts.notes`). `saved` is reserved/unused — `reviewed` is final for v1. A
+  guard refuses to re-parse a receipt whose `review_status='reviewed'` so a
+  re-parse can never clobber the user's corrections.
+- **Upload → review handoff.** `submitReceiptUpload` now returns the new
+  `receiptId`; the upload form navigates to `/capture/receipt/[id]/review`. The
+  review page reads the `id` from the dynamic segment and passes it **explicitly**
+  as the first argument to each Server Action (`runParse`, `submitReview`) — no
+  closure/segment magic. The page is `force-dynamic` so the build never touches
+  the DB.
+- **Money/date helpers** are duplicated locally in the new parsing/review
+  modules (2dp formatting, noon-UTC date per D9) rather than coupling receipts
+  to `lib/manual-entry`. A shared `lib/domain` money/date util is a future
+  cleanup (flagged), not done here to keep the slice self-contained.
+- **Verification:** Vitest 81/81 (26 new: parsed-receipt Zod accept/reject,
+  parsing records mappers, stub determinism, review Zod, review-form behavior
+  with mocked actions/router, **PGlite integration** proving pending→parsed +
+  3 item rows, idempotent re-parse, parser-throw → failed/no items, invalid
+  output → failed/no items, reviewed-guard no-clobber, and review save →
+  reviewed header), `next lint` clean, `prettier --check` clean, `next build`
+  OK (10 routes; `/capture/receipt/[id]/review` server-rendered on demand),
+  Playwright 7/7. The parse/review save paths are integration-covered, not e2e,
+  because the test env has no `DATABASE_URL` (same rationale as Slices 1/3/4).
