@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { z } from "zod";
 
 import { getDb } from "@/lib/db";
 import { createReceiptParser } from "@/lib/receipts/parsing/create-parser";
@@ -21,6 +22,31 @@ export interface ReceiptActionResult {
   status: "success" | "error";
   message: string;
   fieldErrors?: Record<string, string[] | undefined>;
+  /** Validation messages for edited line items, keyed by their row index. */
+  itemErrors?: Record<number, string>;
+}
+
+/**
+ * Splits a review validation failure into header field errors and per-item
+ * errors (keyed by row index) so each control can show its own message.
+ */
+function collectReviewErrors(error: z.ZodError): {
+  fieldErrors: Record<string, string[]>;
+  itemErrors: Record<number, string>;
+} {
+  const fieldErrors: Record<string, string[]> = {};
+  const itemErrors: Record<number, string> = {};
+
+  for (const issue of error.issues) {
+    const [first, second] = issue.path;
+    if (first === "items" && typeof second === "number") {
+      itemErrors[second] ??= issue.message;
+    } else if (typeof first === "string") {
+      (fieldErrors[first] ??= []).push(issue.message);
+    }
+  }
+
+  return { fieldErrors, itemErrors };
 }
 
 export async function runParse(
@@ -52,10 +78,12 @@ export async function submitReview(
   const parsed = reviewReceiptSchema.safeParse(input);
 
   if (!parsed.success) {
+    const { fieldErrors, itemErrors } = collectReviewErrors(parsed.error);
     return {
       status: "error",
       message: "Please fix the highlighted fields.",
-      fieldErrors: parsed.error.flatten().fieldErrors,
+      fieldErrors,
+      itemErrors,
     };
   }
 

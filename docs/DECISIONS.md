@@ -282,3 +282,81 @@ the live adapter, the richer line-item contract, and auto-parse on upload.
   `next build` OK (10 routes; `/capture/receipt/[id]/review` server-rendered on
   demand). Upload→parse→review is integration-covered (PGlite), not e2e, because
   the test env has no `DATABASE_URL` (same rationale as prior slices).
+
+## 2026-06-30 — Milestone 2, Slice 3
+
+Make partial and low-confidence parses legible in the review screen without
+touching the schema or the parsing seam. No new columns, queries, or
+dependencies; the work is purely a derived read over data the page already
+loads.
+
+- **D23 — Parse quality is a derived verdict, not stored state.**
+  `assessParseQuality` (`lib/receipts/review/quality.ts`) is a pure function that
+  turns the review fields (`merchant`, `purchaseDate`, `total`, item count,
+  `parseConfidence`) into `good | low | partial`. Nothing is persisted — the
+  verdict is recomputed on render, so there is no migration and no new write
+  path. Keeping the logic pure (separate from the natural-language banner)
+  follows CLAUDE.md rule 8: structured logic beneath any worded output.
+- **D24 — The notice is assessed against LIVE form state.** The review form
+  recomputes the verdict from its controlled inputs, so a "missing merchant"
+  warning clears the instant the user types one — an optimistic, no-round-trip
+  correction loop. `parseConfidence` is the server snapshot and persists until a
+  re-parse, which is correct (editing a value does not re-score the OCR).
+- **D25 — Low-confidence threshold = 0.6, surfaced two ways.**
+  `LOW_CONFIDENCE_THRESHOLD` flags the receipt-level notice and a per-item
+  "Low confidence" badge. The mock parser scores at/under 0.6 by design, so local
+  data always exercises the warning and reinforces the review step.
+- **Design.** No new colour was introduced (honours the single blue-accent
+  decision): the notice reuses the existing neutral card styling, with the
+  accent only as the heading colour for a `partial` parse; badges reuse the
+  existing pill class. Typography scale is unchanged.
+- **Failed-state copy.** The pre-parse view no longer pairs the contradictory
+  "last attempt failed" + "hasn't been parsed yet" lines. A failed receipt now
+  reads "We couldn't read this receipt automatically", shows the reason muted,
+  and offers a "Try again" button; a never-attempted receipt keeps "Parse
+  receipt". No manual-entry-from-failed path was added (a later slice).
+- **Verification:** Vitest 99/99 (new: `review-quality` unit suite + 5 review-form
+  cases covering good/partial/low notices, the live-edit clear, the item badge,
+  and the failed-state retry), `next lint` clean, `prettier --check` clean.
+  `tsc --noEmit` surfaces one **pre-existing** error in
+  `tests/unit/create-parser.test.ts` (unrelated `ProcessEnv` cast), untouched by
+  this slice.
+
+## 2026-06-30 — Milestone 2, Slice 4
+
+Complete the core review workflow: make the parsed line items editable and
+deletable, and persist those corrections as part of the existing save. No DB
+schema changes, no new dependencies, and the parsing seam is untouched — this is
+purely review-and-correct behaviour over the existing `receipts`/`items` tables.
+
+- **D26 — Item edits ride the existing save, in one transaction.**
+  `reviewReceiptSchema` gained an OPTIONAL `items` array (`id`, `itemName`,
+  `quantity`, `price`); `saveReviewedReceipt` reconciles them inside the SAME
+  transaction as the header update, so a half-saved review is impossible. There
+  is no separate per-row server action — the form sends the full surviving set
+  on save.
+- **D27 — `items` is the surviving set; deletion is implicit and scoped.**
+  When `items` is present, rows missing from it are deleted; when it is absent
+  the line items are left untouched (preserving the original header-only
+  contract and the existing header-only test). Both the delete and every update
+  are scoped to `receiptId` + `sourceType='receipt'`, so a stale or forged id
+  can never edit or delete another receipt's rows (covered by an integration
+  test). An empty `items: []` deletes them all; the empty-survivors case is
+  guarded because an empty `notInArray` is invalid SQL.
+- **Editable fields.** Name, quantity, and unit price only. `rawLineText` (the
+  OCR line) stays read-only as the evidence behind each row — keeping the record
+  explainable (CLAUDE.md rule 8). Adding brand-new line items is intentionally
+  out of scope (correction + deletion only).
+- **Validation & errors.** Item money reuses the 2dp/non-negative rules; quantity
+  must be positive. `submitReview` now splits a Zod failure into header
+  `fieldErrors` and index-keyed `itemErrors`, so each bad row shows its own
+  message instead of a single generic banner.
+- **Design.** Field/label/error/badge classes were extracted to
+  `components/receipt-form-styles.ts` so the new `receipt-items-editor` reuses
+  the exact input styling — no visual or typography drift. The "Read-only" badge
+  on the items section was removed now that the rows are editable.
+- **Verification:** Vitest 112/112 (new: schema item cases; service
+  edit/delete/empty-set/omitted/cross-receipt-isolation integration cases; form
+  cases for editing into the payload, removal, and per-item error display),
+  `next lint` clean, `prettier --check` clean. The same pre-existing
+  `create-parser.test.ts` `tsc` error remains untouched.

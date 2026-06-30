@@ -18,7 +18,7 @@ Slice 2 app shell (nav + theme) → Slice 3 manual entry (E2E) → Slice 4 recei
 
 In slices: Slice 1 parse seam (stub) + header-only review scaffold →
 Slice 2 live provider behind the seam (mock fallback) + auto-parse on upload →
-later slice line-item correction.
+Slice 3 parse-quality UX → Slice 4 line-item correction and deletion.
 
 - [x] Integrate OCR/parsing service. _(Slice 2 — live HTTP adapter selected by
       `createReceiptParser` with automatic mock fallback; upload auto-parses so
@@ -26,11 +26,19 @@ later slice line-item correction.
 - [x] Build parsed receipt review screen. _(Slice 1 — header-only scaffold;
       line items read-only)_
 - [x] Allow merchant/date/total editing. _(Slice 1)_
-- [ ] Allow line-item correction and deletion.
-- [x] Save reviewed receipt and item rows. _(Slice 1 — items persisted at parse;
-      review saves the header and marks the receipt reviewed)_
+- [x] Allow line-item correction and deletion. _(Slice 4 — each parsed line's
+      name/quantity/unit price is editable and removable in
+      `receipt-items-editor`; `rawLineText` stays read-only as evidence. Adding
+      new lines is out of scope.)_
+- [x] Save reviewed receipt and item rows. _(Slice 4 — `saveReviewedReceipt`
+      now reconciles item edits and deletions in the same transaction as the
+      header; absent `items` leaves rows untouched. Slice 1 persisted items at
+      parse time.)_
 - [x] Add failed parse handling. _(Slice 1 — parser/validation failure sets
       `ocr_status='failed'` + reason note, writes no items)_
+- [x] Surface parse quality in review. _(Slice 3 — derived, no-schema notice for
+      partial/low-confidence parses, per-item low-confidence flag, clearer
+      failed-state retry copy; logic in `lib/receipts/review/quality.ts`)_
 
 ## Milestone 3: Dashboard
 

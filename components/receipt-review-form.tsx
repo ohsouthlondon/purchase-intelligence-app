@@ -8,14 +8,28 @@ import {
   submitReview,
   type ReceiptActionResult,
 } from "@/app/capture/receipt/[id]/review/actions";
+import {
+  errorClass,
+  fieldClass,
+  labelClass,
+} from "@/components/receipt-form-styles";
+import {
+  ReceiptItemsEditor,
+  type EditableItem,
+  type EditableItemField,
+} from "@/components/receipt-items-editor";
+import {
+  assessParseQuality,
+  type ParseQuality,
+} from "@/lib/receipts/review/quality";
 
 /**
- * Receipt review scaffold (Milestone 2, Slice 1).
+ * Receipt review form (Milestone 2).
  *
  * Drives the small parse → review state machine for one receipt:
  * - `pending`/`failed` → a Parse trigger (re-tryable).
  * - `parsed`/`reviewed` → an editable header form (merchant, date, totals,
- *   notes) plus read-only parsed line items. Line-item editing is a later slice.
+ *   notes) plus an editable list of parsed line items (correct or remove).
  *
  * The `receiptId` is passed in from the page and forwarded explicitly to each
  * Server Action. Client checks are convenience only — the actions re-validate.
@@ -44,20 +58,49 @@ interface ReceiptReviewFormProps {
   ocrStatus: string;
   reviewStatus: string;
   failureNote: string | null;
+  parseConfidence: string | null;
   initial: InitialValues;
   items: ReviewItem[];
 }
 
-const fieldClass =
-  "w-full rounded-lg border border-neutral-200 bg-white px-3.5 py-2.5 text-sm text-neutral-900 shadow-xs outline-none transition-colors placeholder:text-neutral-400 focus:border-accent focus:ring-2 focus:ring-accent/30 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-50 dark:placeholder:text-neutral-500";
-const labelClass = "text-sm font-medium text-neutral-700 dark:text-neutral-300";
-const errorClass = "text-xs text-red-600 dark:text-red-400";
+// Built once; "and" reads better than "or" for a list of fields to fill in.
+const fieldListFormatter = new Intl.ListFormat("en-GB", {
+  style: "long",
+  type: "conjunction",
+});
+
+/** Plain-language phrasing layered on top of the structured quality verdict. */
+function buildParseNotice(quality: ParseQuality): {
+  heading: string;
+  detail: string;
+} {
+  if (quality.level === "low") {
+    return {
+      heading: "Low-confidence parse",
+      detail:
+        "These values were read with low confidence — double-check them before you save.",
+    };
+  }
+
+  const parts: string[] = [];
+  if (quality.missingFields.length > 0) {
+    parts.push(
+      `Add the ${fieldListFormatter.format(quality.missingFields)} below before you save.`,
+    );
+  }
+  if (!quality.hasItems) {
+    parts.push("No line items were read from this receipt.");
+  }
+
+  return { heading: "We couldn't read everything", detail: parts.join(" ") };
+}
 
 export function ReceiptReviewForm({
   receiptId,
   ocrStatus,
   reviewStatus,
   failureNote,
+  parseConfidence,
   initial,
   items,
 }: ReceiptReviewFormProps) {
@@ -68,6 +111,16 @@ export function ReceiptReviewForm({
   const [total, setTotal] = useState(initial.total);
   const [tax, setTax] = useState(initial.tax);
   const [notes, setNotes] = useState(initial.notes);
+  const [editableItems, setEditableItems] = useState<EditableItem[]>(() =>
+    items.map((item) => ({
+      id: item.id,
+      itemName: item.itemNameRaw ?? "",
+      quantity: item.quantityValue ?? "",
+      price: item.price ?? "",
+      rawLineText: item.rawLineText,
+      confidence: item.confidence,
+    })),
+  );
   const [result, setResult] = useState<ReceiptActionResult | null>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -75,6 +128,17 @@ export function ReceiptReviewForm({
     result?.status === "error" ? result.fieldErrors : undefined;
   const errorFor = (field: string): string | undefined =>
     fieldErrors?.[field]?.[0];
+  const itemErrors = result?.status === "error" ? result.itemErrors : undefined;
+
+  function updateItem(id: string, field: EditableItemField, value: string) {
+    setEditableItems((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, [field]: value } : item)),
+    );
+  }
+
+  function removeItem(id: string) {
+    setEditableItems((prev) => prev.filter((item) => item.id !== id));
+  }
 
   const needsParse = ocrStatus === "pending" || ocrStatus === "failed";
 
@@ -90,7 +154,20 @@ export function ReceiptReviewForm({
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setResult(null);
-    const payload = { merchant, purchaseDate, subtotal, total, tax, notes };
+    const payload = {
+      merchant,
+      purchaseDate,
+      subtotal,
+      total,
+      tax,
+      notes,
+      items: editableItems.map(({ id, itemName, quantity, price }) => ({
+        id,
+        itemName,
+        quantity,
+        price,
+      })),
+    };
     startTransition(async () => {
       const actionResult = await submitReview(receiptId, payload);
       setResult(actionResult);
@@ -99,21 +176,26 @@ export function ReceiptReviewForm({
   }
 
   if (needsParse) {
+    const hasFailed = ocrStatus === "failed";
     return (
       <div className="flex flex-col gap-3">
-        {ocrStatus === "failed" && failureNote ? (
-          <p className={errorClass}>Last attempt failed: {failureNote}</p>
-        ) : null}
-        <p className="text-sm text-neutral-500 dark:text-neutral-400">
-          This receipt hasn&apos;t been parsed yet.
+        <p className="text-sm text-neutral-600 dark:text-neutral-300">
+          {hasFailed
+            ? "We couldn't read this receipt automatically."
+            : "This receipt hasn't been parsed yet."}
         </p>
+        {hasFailed && failureNote ? (
+          <p className="text-xs text-neutral-500 dark:text-neutral-400">
+            Reason: {failureNote}
+          </p>
+        ) : null}
         <button
           type="button"
           onClick={handleParse}
           disabled={isPending}
           className="bg-accent text-accent-foreground hover:bg-accent-hover focus-visible:ring-accent/40 disabled:hover:bg-accent self-start rounded-lg px-4 py-2.5 text-sm font-semibold shadow-xs transition-colors focus-visible:ring-2 focus-visible:outline-none disabled:opacity-60"
         >
-          {isPending ? "Parsing…" : "Parse receipt"}
+          {isPending ? "Parsing…" : hasFailed ? "Try again" : "Parse receipt"}
         </button>
         {result ? (
           <p
@@ -132,12 +214,45 @@ export function ReceiptReviewForm({
     );
   }
 
+  // Assess against LIVE form state (not just the server snapshot) so the notice
+  // clears the moment the user fills in a missing field — no round-trip needed.
+  const quality = assessParseQuality({
+    merchant,
+    purchaseDate,
+    total,
+    itemCount: items.length,
+    parseConfidence,
+  });
+  const showQualityNotice =
+    reviewStatus !== "reviewed" && quality.level !== "good";
+  const notice = showQualityNotice ? buildParseNotice(quality) : null;
+
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-5" noValidate>
       {reviewStatus === "reviewed" ? (
         <p className="text-sm text-green-600 dark:text-green-400">
           Reviewed — you can update the details and save again.
         </p>
+      ) : null}
+
+      {notice ? (
+        <div
+          role="status"
+          className="rounded-xl border border-neutral-200 bg-neutral-50 p-4 dark:border-neutral-800 dark:bg-neutral-900/50"
+        >
+          <p
+            className={`text-sm font-semibold ${
+              quality.level === "partial"
+                ? "text-accent"
+                : "text-neutral-800 dark:text-neutral-100"
+            }`}
+          >
+            {notice.heading}
+          </p>
+          <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
+            {notice.detail}
+          </p>
+        </div>
       ) : null}
 
       <div className="flex flex-col gap-4 rounded-xl border border-neutral-200 bg-white p-4 shadow-xs dark:border-neutral-800 dark:bg-neutral-900">
@@ -241,43 +356,12 @@ export function ReceiptReviewForm({
         </div>
       </div>
 
-      <fieldset className="flex flex-col gap-2 rounded-xl border border-neutral-200 bg-neutral-50 p-4 dark:border-neutral-800 dark:bg-neutral-900/50">
-        <legend className="flex items-center gap-2 px-1 text-sm font-medium text-neutral-700 dark:text-neutral-300">
-          Parsed items
-          <span className="rounded-full border border-neutral-200 px-2 py-0.5 text-[10px] font-medium tracking-wide text-neutral-500 uppercase dark:border-neutral-700 dark:text-neutral-400">
-            Read-only
-          </span>
-        </legend>
-        {items.length === 0 ? (
-          <p className="text-sm text-neutral-500 dark:text-neutral-400">
-            No line items were parsed.
-          </p>
-        ) : (
-          <ul className="flex flex-col gap-2">
-            {items.map((item) => (
-              <li
-                key={item.id}
-                className="flex items-center justify-between gap-3 rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm dark:border-neutral-800 dark:bg-neutral-900"
-              >
-                <span className="flex flex-col">
-                  <span className="font-medium">
-                    {item.itemNameRaw ?? item.rawLineText ?? "Item"}
-                  </span>
-                  {item.rawLineText ? (
-                    <span className="text-xs text-neutral-500 dark:text-neutral-400">
-                      {item.rawLineText}
-                    </span>
-                  ) : null}
-                </span>
-                <span className="shrink-0 text-neutral-700 tabular-nums dark:text-neutral-300">
-                  {item.quantityValue ? `${item.quantityValue} × ` : ""}
-                  {item.price != null ? `£${item.price}` : "—"}
-                </span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </fieldset>
+      <ReceiptItemsEditor
+        items={editableItems}
+        errors={itemErrors}
+        onChange={updateItem}
+        onRemove={removeItem}
+      />
 
       <div className="flex flex-col gap-1">
         <label htmlFor="notes" className={labelClass}>

@@ -45,6 +45,7 @@ export default async function ReceiptReviewPage({
         ocrStatus={receipt.ocrStatus}
         reviewStatus={receipt.reviewStatus}
         failureNote={isFailed ? receipt.notes : null}
+        parseConfidence={receipt.parseConfidence}
         initial={{
           merchant: receipt.merchantNameRaw ?? "",
           purchaseDate: toDateInput(receipt.purchaseDatetime),
