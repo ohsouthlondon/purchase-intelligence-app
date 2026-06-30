@@ -1,11 +1,11 @@
 import Link from "next/link";
-import { FileText, PlusCircle } from "lucide-react";
+import { ChevronRight, FileText, PlusCircle } from "lucide-react";
 
 export default function CapturePage() {
   return (
     <section className="flex flex-col gap-5">
       <div className="flex flex-col gap-1">
-        <h1 className="text-2xl font-semibold tracking-tight">Capture</h1>
+        <h1 className="text-xl font-semibold tracking-tight">Capture</h1>
         <p className="text-sm text-neutral-500 dark:text-neutral-400">
           Add a purchase manually or upload a receipt photo.
         </p>
@@ -15,32 +15,41 @@ export default function CapturePage() {
         <li>
           <Link
             href="/capture/manual"
-            className="flex items-start gap-3 rounded-lg border border-neutral-200 p-4 transition-colors hover:border-neutral-400 hover:bg-neutral-50 dark:border-neutral-800 dark:hover:border-neutral-600 dark:hover:bg-neutral-900"
+            className="group flex items-center gap-3 rounded-xl border border-neutral-200 bg-white p-4 shadow-xs transition-all hover:border-neutral-300 hover:shadow-sm dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-neutral-700"
           >
-            <PlusCircle
-              className="mt-0.5 h-5 w-5 shrink-0"
-              aria-hidden="true"
-            />
-            <span className="flex flex-col gap-0.5">
-              <span className="text-sm font-medium">Add manual entry</span>
+            <span className="bg-accent/10 text-accent flex h-10 w-10 shrink-0 items-center justify-center rounded-lg">
+              <PlusCircle className="h-5 w-5" aria-hidden="true" />
+            </span>
+            <span className="flex flex-1 flex-col gap-0.5">
+              <span className="text-sm font-semibold">Add manual entry</span>
               <span className="text-xs text-neutral-500 dark:text-neutral-400">
                 Record a purchase by total or itemize it.
               </span>
             </span>
+            <ChevronRight
+              className="h-4 w-4 shrink-0 text-neutral-400 transition-colors group-hover:text-neutral-600 dark:group-hover:text-neutral-300"
+              aria-hidden="true"
+            />
           </Link>
         </li>
         <li>
           <Link
             href="/capture/receipt"
-            className="flex items-start gap-3 rounded-lg border border-neutral-200 p-4 transition-colors hover:border-neutral-400 hover:bg-neutral-50 dark:border-neutral-800 dark:hover:border-neutral-600 dark:hover:bg-neutral-900"
+            className="group flex items-center gap-3 rounded-xl border border-neutral-200 bg-white p-4 shadow-xs transition-all hover:border-neutral-300 hover:shadow-sm dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-neutral-700"
           >
-            <FileText className="mt-0.5 h-5 w-5 shrink-0" aria-hidden="true" />
-            <span className="flex flex-col gap-0.5">
-              <span className="text-sm font-medium">Upload receipt</span>
+            <span className="bg-accent/10 text-accent flex h-10 w-10 shrink-0 items-center justify-center rounded-lg">
+              <FileText className="h-5 w-5" aria-hidden="true" />
+            </span>
+            <span className="flex flex-1 flex-col gap-0.5">
+              <span className="text-sm font-semibold">Upload receipt</span>
               <span className="text-xs text-neutral-500 dark:text-neutral-400">
                 Add a receipt photo to parse later.
               </span>
             </span>
+            <ChevronRight
+              className="h-4 w-4 shrink-0 text-neutral-400 transition-colors group-hover:text-neutral-600 dark:group-hover:text-neutral-300"
+              aria-hidden="true"
+            />
           </Link>
         </li>
       </ul>

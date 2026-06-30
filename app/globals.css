@@ -3,8 +3,28 @@
 /* Class-based dark mode so next-themes' `.dark` on <html> drives `dark:` variants. */
 @custom-variant dark (&:where(.dark, .dark *));
 
+/*
+ * Single accent (blue) as the only non-neutral hue. Kept slightly quieter in
+ * dark mode and paired with an off-white foreground rather than pure white.
+ * Surfaces, borders, and text all use Tailwind's neutral scale via utilities.
+ */
 :root {
   color-scheme: light dark;
+  --accent: #2563eb;
+  --accent-hover: #1d4ed8;
+  --accent-foreground: #f8fafc;
+}
+
+.dark {
+  --accent: #3b6fd6;
+  --accent-hover: #3461c0;
+  --accent-foreground: #f4f6fb;
+}
+
+@theme inline {
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-foreground: var(--accent-foreground);
 }
 
 html,

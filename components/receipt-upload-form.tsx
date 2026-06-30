@@ -18,7 +18,7 @@ import { RECEIPT_ALLOWED_TYPES } from "@/lib/receipts/schema";
  */
 
 const fieldClass =
-  "w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 shadow-sm outline-none file:mr-3 file:rounded file:border-0 file:bg-neutral-100 file:px-3 file:py-1 file:text-sm focus:border-neutral-500 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-50 dark:file:bg-neutral-800 dark:file:text-neutral-200";
+  "w-full rounded-lg border border-neutral-200 bg-white px-3.5 py-2.5 text-sm text-neutral-900 shadow-xs outline-none transition-colors file:mr-3 file:rounded file:border-0 file:bg-neutral-100 file:px-3 file:py-1 file:text-sm focus:border-accent focus:ring-2 focus:ring-accent/30 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-50 dark:file:bg-neutral-800 dark:file:text-neutral-200";
 const labelClass = "text-sm font-medium text-neutral-700 dark:text-neutral-300";
 const errorClass = "text-xs text-red-600 dark:text-red-400";
 
@@ -109,7 +109,7 @@ export function ReceiptUploadForm() {
           <img
             src={previewUrl}
             alt={`Selected receipt: ${fileName ?? "image"}`}
-            className="max-h-64 w-auto rounded-md border border-neutral-200 object-contain dark:border-neutral-800"
+            className="max-h-64 w-auto rounded-lg border border-neutral-200 object-contain dark:border-neutral-800"
           />
           {fileName ? (
             <span className="text-xs text-neutral-500 dark:text-neutral-400">
@@ -122,7 +122,7 @@ export function ReceiptUploadForm() {
       <button
         type="submit"
         disabled={isPending || !fileName}
-        className="rounded-md bg-neutral-900 px-4 py-2 text-sm font-semibold text-white disabled:opacity-60 dark:bg-neutral-100 dark:text-neutral-900"
+        className="bg-accent text-accent-foreground hover:bg-accent-hover focus-visible:ring-accent/40 disabled:hover:bg-accent rounded-lg px-4 py-2.5 text-sm font-semibold shadow-xs transition-colors focus-visible:ring-2 focus-visible:outline-none disabled:opacity-60"
       >
         {isPending ? "Uploading…" : "Upload receipt"}
       </button>

@@ -49,7 +49,7 @@ interface ReceiptReviewFormProps {
 }
 
 const fieldClass =
-  "w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 shadow-sm outline-none focus:border-neutral-500 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-50";
+  "w-full rounded-lg border border-neutral-200 bg-white px-3.5 py-2.5 text-sm text-neutral-900 shadow-xs outline-none transition-colors placeholder:text-neutral-400 focus:border-accent focus:ring-2 focus:ring-accent/30 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-50 dark:placeholder:text-neutral-500";
 const labelClass = "text-sm font-medium text-neutral-700 dark:text-neutral-300";
 const errorClass = "text-xs text-red-600 dark:text-red-400";
 
@@ -111,7 +111,7 @@ export function ReceiptReviewForm({
           type="button"
           onClick={handleParse}
           disabled={isPending}
-          className="self-start rounded-md bg-neutral-900 px-4 py-2 text-sm font-semibold text-white disabled:opacity-60 dark:bg-neutral-100 dark:text-neutral-900"
+          className="bg-accent text-accent-foreground hover:bg-accent-hover focus-visible:ring-accent/40 disabled:hover:bg-accent self-start rounded-lg px-4 py-2.5 text-sm font-semibold shadow-xs transition-colors focus-visible:ring-2 focus-visible:outline-none disabled:opacity-60"
         >
           {isPending ? "Parsing…" : "Parse receipt"}
         </button>
@@ -140,107 +140,114 @@ export function ReceiptReviewForm({
         </p>
       ) : null}
 
-      <div className="flex flex-col gap-1">
-        <label htmlFor="merchant" className={labelClass}>
-          Merchant
-        </label>
-        <input
-          id="merchant"
-          name="merchant"
-          type="text"
-          value={merchant}
-          onChange={(event) => setMerchant(event.target.value)}
-          className={fieldClass}
-          placeholder="e.g. Tesco"
-        />
-        {errorFor("merchant") ? (
-          <p className={errorClass}>{errorFor("merchant")}</p>
-        ) : null}
-      </div>
-
-      <div className="flex flex-col gap-1">
-        <label htmlFor="purchaseDate" className={labelClass}>
-          Date
-        </label>
-        <input
-          id="purchaseDate"
-          name="purchaseDate"
-          type="date"
-          required
-          value={purchaseDate}
-          onChange={(event) => setPurchaseDate(event.target.value)}
-          className={fieldClass}
-        />
-        {errorFor("purchaseDate") ? (
-          <p className={errorClass}>{errorFor("purchaseDate")}</p>
-        ) : null}
-      </div>
-
-      <div className="flex gap-2">
-        <div className="flex flex-1 flex-col gap-1">
-          <label htmlFor="subtotal" className={labelClass}>
-            Subtotal (£)
+      <div className="flex flex-col gap-4 rounded-xl border border-neutral-200 bg-white p-4 shadow-xs dark:border-neutral-800 dark:bg-neutral-900">
+        <div className="flex flex-col gap-1">
+          <label htmlFor="merchant" className={labelClass}>
+            Merchant
           </label>
           <input
-            id="subtotal"
-            name="subtotal"
-            type="number"
-            inputMode="decimal"
-            step="0.01"
-            min="0"
-            value={subtotal}
-            onChange={(event) => setSubtotal(event.target.value)}
+            id="merchant"
+            name="merchant"
+            type="text"
+            value={merchant}
+            onChange={(event) => setMerchant(event.target.value)}
             className={fieldClass}
-            placeholder="0.00"
+            placeholder="e.g. Tesco"
           />
-          {errorFor("subtotal") ? (
-            <p className={errorClass}>{errorFor("subtotal")}</p>
+          {errorFor("merchant") ? (
+            <p className={errorClass}>{errorFor("merchant")}</p>
           ) : null}
         </div>
-        <div className="flex flex-1 flex-col gap-1">
-          <label htmlFor="total" className={labelClass}>
-            Total (£)
+
+        <div className="flex flex-col gap-1">
+          <label htmlFor="purchaseDate" className={labelClass}>
+            Date
           </label>
           <input
-            id="total"
-            name="total"
-            type="number"
-            inputMode="decimal"
-            step="0.01"
-            min="0"
-            value={total}
-            onChange={(event) => setTotal(event.target.value)}
+            id="purchaseDate"
+            name="purchaseDate"
+            type="date"
+            required
+            value={purchaseDate}
+            onChange={(event) => setPurchaseDate(event.target.value)}
             className={fieldClass}
-            placeholder="0.00"
           />
-          {errorFor("total") ? (
-            <p className={errorClass}>{errorFor("total")}</p>
+          {errorFor("purchaseDate") ? (
+            <p className={errorClass}>{errorFor("purchaseDate")}</p>
           ) : null}
         </div>
-        <div className="flex flex-1 flex-col gap-1">
-          <label htmlFor="tax" className={labelClass}>
-            Tax (£)
-          </label>
-          <input
-            id="tax"
-            name="tax"
-            type="number"
-            inputMode="decimal"
-            step="0.01"
-            min="0"
-            value={tax}
-            onChange={(event) => setTax(event.target.value)}
-            className={fieldClass}
-            placeholder="0.00"
-          />
-          {errorFor("tax") ? (
-            <p className={errorClass}>{errorFor("tax")}</p>
-          ) : null}
+
+        <div className="flex gap-2">
+          <div className="flex flex-1 flex-col gap-1">
+            <label htmlFor="subtotal" className={labelClass}>
+              Subtotal (£)
+            </label>
+            <input
+              id="subtotal"
+              name="subtotal"
+              type="number"
+              inputMode="decimal"
+              step="0.01"
+              min="0"
+              value={subtotal}
+              onChange={(event) => setSubtotal(event.target.value)}
+              className={fieldClass}
+              placeholder="0.00"
+            />
+            {errorFor("subtotal") ? (
+              <p className={errorClass}>{errorFor("subtotal")}</p>
+            ) : null}
+          </div>
+          <div className="flex flex-1 flex-col gap-1">
+            <label htmlFor="total" className={labelClass}>
+              Total (£)
+            </label>
+            <input
+              id="total"
+              name="total"
+              type="number"
+              inputMode="decimal"
+              step="0.01"
+              min="0"
+              value={total}
+              onChange={(event) => setTotal(event.target.value)}
+              className={fieldClass}
+              placeholder="0.00"
+            />
+            {errorFor("total") ? (
+              <p className={errorClass}>{errorFor("total")}</p>
+            ) : null}
+          </div>
+          <div className="flex flex-1 flex-col gap-1">
+            <label htmlFor="tax" className={labelClass}>
+              Tax (£)
+            </label>
+            <input
+              id="tax"
+              name="tax"
+              type="number"
+              inputMode="decimal"
+              step="0.01"
+              min="0"
+              value={tax}
+              onChange={(event) => setTax(event.target.value)}
+              className={fieldClass}
+              placeholder="0.00"
+            />
+            {errorFor("tax") ? (
+              <p className={errorClass}>{errorFor("tax")}</p>
+            ) : null}
+          </div>
         </div>
       </div>
 
-      <fieldset className="flex flex-col gap-2">
-        <legend className={labelClass}>Parsed items (read-only)</legend>
+      <fieldset className="flex flex-col gap-2 rounded-xl border border-neutral-200 bg-neutral-50 p-4 dark:border-neutral-800 dark:bg-neutral-900/50">
+        <legend className="flex items-center gap-2 px-1 text-sm font-medium text-neutral-700 dark:text-neutral-300">
+          Parsed items
+          <span className="rounded-full border border-neutral-200 px-2 py-0.5 text-[10px] font-medium tracking-wide text-neutral-500 uppercase dark:border-neutral-700 dark:text-neutral-400">
+            Read-only
+          </span>
+        </legend>
         {items.length === 0 ? (
           <p className="text-sm text-neutral-500 dark:text-neutral-400">
             No line items were parsed.
@@ -250,7 +257,7 @@ export function ReceiptReviewForm({
             {items.map((item) => (
               <li
                 key={item.id}
-                className="flex items-center justify-between gap-3 rounded-md border border-neutral-200 px-3 py-2 text-sm dark:border-neutral-800"
+                className="flex items-center justify-between gap-3 rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm dark:border-neutral-800 dark:bg-neutral-900"
               >
                 <span className="flex flex-col">
                   <span className="font-medium">
@@ -262,7 +269,7 @@ export function ReceiptReviewForm({
                     </span>
                   ) : null}
                 </span>
-                <span className="shrink-0 text-neutral-700 dark:text-neutral-300">
+                <span className="shrink-0 text-neutral-700 tabular-nums dark:text-neutral-300">
                   {item.quantityValue ? `${item.quantityValue} × ` : ""}
                   {item.price != null ? `£${item.price}` : "—"}
                 </span>
@@ -292,7 +299,7 @@ export function ReceiptReviewForm({
       <button
         type="submit"
         disabled={isPending}
-        className="rounded-md bg-neutral-900 px-4 py-2 text-sm font-semibold text-white disabled:opacity-60 dark:bg-neutral-100 dark:text-neutral-900"
+        className="bg-accent text-accent-foreground hover:bg-accent-hover focus-visible:ring-accent/40 disabled:hover:bg-accent rounded-lg px-4 py-2.5 text-sm font-semibold shadow-xs transition-colors focus-visible:ring-2 focus-visible:outline-none disabled:opacity-60"
       >
         {isPending ? "Saving…" : "Save review"}
       </button>

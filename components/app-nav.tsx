@@ -15,7 +15,7 @@ export function AppNav() {
   return (
     <nav
       aria-label="Primary"
-      className="fixed inset-x-0 bottom-0 z-10 border-t border-neutral-200 bg-white/90 backdrop-blur dark:border-neutral-800 dark:bg-neutral-950/90"
+      className="fixed inset-x-0 bottom-0 z-10 border-t border-neutral-200 bg-neutral-50/90 backdrop-blur dark:border-neutral-800 dark:bg-neutral-950/90"
     >
       <ul className="mx-auto flex w-full max-w-md items-stretch justify-between px-2">
         {NAV_ITEMS.map((item) => {
@@ -29,7 +29,7 @@ export function AppNav() {
                 aria-current={isActive ? "page" : undefined}
                 className={`flex flex-col items-center gap-1 py-2 text-xs transition-colors ${
                   isActive
-                    ? "text-neutral-900 dark:text-neutral-50"
+                    ? "text-accent"
                     : "text-neutral-500 hover:text-neutral-800 dark:text-neutral-400 dark:hover:text-neutral-100"
                 }`}
               >

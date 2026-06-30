@@ -34,9 +34,7 @@ export default async function ReceiptReviewPage({
         >
           ← Capture
         </Link>
-        <h1 className="text-2xl font-semibold tracking-tight">
-          Review receipt
-        </h1>
+        <h1 className="text-xl font-semibold tracking-tight">Review receipt</h1>
         <p className="text-sm text-neutral-500 dark:text-neutral-400">
           Check the parsed details and save them when they look right.
         </p>

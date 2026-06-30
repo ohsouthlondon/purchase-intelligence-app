@@ -29,7 +29,7 @@ interface ManualEntryFormProps {
 }
 
 const fieldClass =
-  "w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 shadow-sm outline-none focus:border-neutral-500 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-50";
+  "w-full rounded-lg border border-neutral-200 bg-white px-3.5 py-2.5 text-sm text-neutral-900 shadow-xs outline-none transition-colors placeholder:text-neutral-400 focus:border-accent focus:ring-2 focus:ring-accent/30 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-50 dark:placeholder:text-neutral-500";
 const labelClass = "text-sm font-medium text-neutral-700 dark:text-neutral-300";
 const errorClass = "text-xs text-red-600 dark:text-red-400";
 
@@ -126,10 +126,10 @@ export function ManualEntryForm({ categories }: ManualEntryFormProps) {
           {(["simple", "itemized"] as const).map((value) => (
             <label
               key={value}
-              className={`flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-md border px-3 py-2 text-sm ${
+              className={`flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${
                 mode === value
-                  ? "border-neutral-900 bg-neutral-900 text-white dark:border-neutral-100 dark:bg-neutral-100 dark:text-neutral-900"
-                  : "border-neutral-300 text-neutral-700 dark:border-neutral-700 dark:text-neutral-300"
+                  ? "border-accent bg-accent text-accent-foreground"
+                  : "border-neutral-200 text-neutral-700 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
               }`}
             >
               <input
@@ -296,11 +296,11 @@ export function ManualEntryForm({ categories }: ManualEntryFormProps) {
             <button
               type="button"
               onClick={addItem}
-              className="rounded-md border border-neutral-300 px-3 py-1.5 text-sm font-medium text-neutral-700 hover:bg-neutral-100 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
+              className="rounded-lg border border-neutral-200 px-3 py-1.5 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-100 dark:border-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-800"
             >
               Add item
             </button>
-            <span className="text-sm text-neutral-500 dark:text-neutral-400">
+            <span className="text-sm text-neutral-500 tabular-nums dark:text-neutral-400">
               Total: £{itemizedTotal.toFixed(2)}
             </span>
           </div>
@@ -330,7 +330,7 @@ export function ManualEntryForm({ categories }: ManualEntryFormProps) {
       <button
         type="submit"
         disabled={isPending}
-        className="rounded-md bg-neutral-900 px-4 py-2 text-sm font-semibold text-white disabled:opacity-60 dark:bg-neutral-100 dark:text-neutral-900"
+        className="bg-accent text-accent-foreground hover:bg-accent-hover focus-visible:ring-accent/40 disabled:hover:bg-accent rounded-lg px-4 py-2.5 text-sm font-semibold shadow-xs transition-colors focus-visible:ring-2 focus-visible:outline-none disabled:opacity-60"
       >
         {isPending ? "Saving…" : "Save entry"}
       </button>

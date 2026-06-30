@@ -12,9 +12,7 @@ export default function ReceiptUploadPage() {
         >
           ← Capture
         </Link>
-        <h1 className="text-2xl font-semibold tracking-tight">
-          Upload receipt
-        </h1>
+        <h1 className="text-xl font-semibold tracking-tight">Upload receipt</h1>
         <p className="text-sm text-neutral-500 dark:text-neutral-400">
           Add a receipt photo now; parsing and review come later.
         </p>
