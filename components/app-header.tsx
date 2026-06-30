@@ -8,9 +8,9 @@ import { ThemeToggle } from "@/components/theme-toggle";
  */
 export function AppHeader() {
   return (
-    <header className="sticky top-0 z-10 border-b border-neutral-200 bg-neutral-50/80 backdrop-blur dark:border-neutral-800 dark:bg-neutral-950/80">
+    <header className="border-border bg-page/90 sticky top-0 z-20 border-b">
       <div className="mx-auto flex h-14 w-full max-w-md items-center justify-between px-4">
-        <Link href="/" className="text-sm font-semibold tracking-tight">
+        <Link href="/" className="text-fg text-sm font-semibold tracking-tight">
           Purchase Intelligence
         </Link>
         <ThemeToggle />

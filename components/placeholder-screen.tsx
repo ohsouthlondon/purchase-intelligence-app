@@ -1,3 +1,5 @@
+import { Card } from "@/components/ui/card";
+
 interface PlaceholderScreenProps {
   title: string;
   description: string;
@@ -15,15 +17,19 @@ export function PlaceholderScreen({
   milestone,
 }: PlaceholderScreenProps) {
   return (
-    <section className="flex flex-col gap-3">
-      <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
-      <p className="text-sm text-neutral-500 dark:text-neutral-400">
-        {description}
-      </p>
+    <section className="flex flex-col gap-4">
+      <div className="flex flex-col gap-1">
+        <h1 className="text-fg text-2xl font-semibold tracking-tight">
+          {title}
+        </h1>
+        <p className="text-muted text-sm">{description}</p>
+      </div>
       {milestone ? (
-        <p className="text-xs font-medium tracking-wide text-neutral-400 uppercase dark:text-neutral-500">
-          {milestone}
-        </p>
+        <Card className="rise p-4">
+          <p className="text-muted text-xs font-medium tracking-wide uppercase">
+            {milestone}
+          </p>
+        </Card>
       ) : null}
     </section>
   );

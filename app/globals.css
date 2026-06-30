@@ -4,27 +4,96 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 /*
- * Single accent (blue) as the only non-neutral hue. Kept slightly quieter in
- * dark mode and paired with an off-white foreground rather than pure white.
- * Surfaces, borders, and text all use Tailwind's neutral scale via utilities.
+ * Design tokens (2026-06-30 refresh).
+ *
+ * Cool/fresh teal–cyan palette with an indigo background tint. Depth is built
+ * from tinted surfaces, an inner top highlight, and a soft tinted shadow — NOT
+ * backdrop-blur — so it stays cheap on mobile. Decorative background shapes are
+ * kept deliberately subtler than the card depth. This supersedes the previous
+ * single-accent (blue) decision; `--accent*` is retained but repointed to the
+ * teal family so existing utilities adopt the new hue automatically.
+ *
+ * Contrast: text/number/foreground pairings target WCAG AA in both modes
+ * (primary teal-700 on light gives ~4.8:1; white on the teal-700 button ~5.5:1).
  */
 :root {
   color-scheme: light dark;
-  --accent: #2563eb;
-  --accent-hover: #1d4ed8;
-  --accent-foreground: #f8fafc;
+
+  /* Surfaces & lines */
+  --page: #eef6f4;
+  --surface: #ffffff;
+  --surface-tint: #f1faf7;
+  --surface-2: #f3faf8;
+  --border: #ddece7;
+
+  /* Text */
+  --fg: #0e2925;
+  --muted: #4e6e68;
+
+  /* Brand / semantic */
+  --primary: #0f766e;
+  --primary-hover: #0b625b;
+  --primary-foreground: #ffffff;
+  --positive: #0e8f5e;
+  --accent: #0e7490;
+  --accent-hover: #0b5e76;
+  --accent-foreground: #ffffff;
+
+  /* Decorative background shapes — subtler than card depth */
+  --shape-teal: rgba(45, 212, 191, 0.22);
+  --shape-cyan: rgba(56, 189, 248, 0.15);
+  --shape-indigo: rgba(129, 140, 248, 0.12);
+
+  /* Depth: inner top highlight + soft tinted shadow (no blur) */
+  --highlight-inner: rgba(255, 255, 255, 0.9);
+  --elevation:
+    inset 0 1px 0 var(--highlight-inner),
+    0 14px 30px -16px rgba(13, 80, 72, 0.28);
 }
 
 .dark {
-  --accent: #3b6fd6;
-  --accent-hover: #3461c0;
-  --accent-foreground: #f4f6fb;
+  --page: #0a1513;
+  --surface: #12201c;
+  --surface-tint: #15251f;
+  --surface-2: #15241f;
+  --border: #21342e;
+
+  --fg: #e7f3ef;
+  --muted: #93b1aa;
+
+  --primary: #2dd4bf;
+  --primary-hover: #5fe3d2;
+  --primary-foreground: #04231e;
+  --positive: #34d399;
+  --accent: #22d3ee;
+  --accent-hover: #67e8f9;
+  --accent-foreground: #042a30;
+
+  --shape-teal: rgba(45, 212, 191, 0.18);
+  --shape-cyan: rgba(34, 211, 238, 0.13);
+  --shape-indigo: rgba(129, 140, 248, 0.14);
+
+  --highlight-inner: rgba(255, 255, 255, 0.06);
+  --elevation:
+    inset 0 1px 0 var(--highlight-inner), 0 16px 34px -18px rgba(0, 0, 0, 0.6);
 }
 
 @theme inline {
+  --color-page: var(--page);
+  --color-surface: var(--surface);
+  --color-surface-tint: var(--surface-tint);
+  --color-surface-2: var(--surface-2);
+  --color-border: var(--border);
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-positive: var(--positive);
   --color-accent: var(--accent);
   --color-accent-hover: var(--accent-hover);
   --color-accent-foreground: var(--accent-foreground);
+  --shadow-soft: var(--elevation);
 }
 
 html,
@@ -39,4 +108,21 @@ body {
     Helvetica,
     Arial,
     sans-serif;
+}
+
+/* Gentle entrance for cards; disabled when the user prefers reduced motion. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  .rise {
+    animation: rise 0.4s ease both;
+  }
 }

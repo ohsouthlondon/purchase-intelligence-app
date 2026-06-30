@@ -4,6 +4,7 @@ import "./globals.css";
 import { AppHeader } from "@/components/app-header";
 import { AppNav } from "@/components/app-nav";
 import { ThemeProvider } from "@/components/theme-provider";
+import { BackgroundShapes } from "@/components/ui/background-shapes";
 
 export const metadata: Metadata = {
   title: "Purchase Intelligence",
@@ -16,9 +17,10 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className="min-h-screen bg-neutral-50 text-neutral-900 antialiased dark:bg-neutral-950 dark:text-neutral-50">
+      <body className="bg-page text-fg min-h-screen antialiased">
         <ThemeProvider>
-          <div className="flex min-h-screen flex-col">
+          <BackgroundShapes />
+          <div className="relative flex min-h-screen flex-col">
             <AppHeader />
             <main className="mx-auto w-full max-w-md flex-1 px-4 pt-6 pb-24">
               {children}

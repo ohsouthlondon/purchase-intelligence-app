@@ -398,3 +398,39 @@ dependencies, deterministic aggregation only (no LLM).
   exclusion, unreviewed-receipt exclusion, and the window bound), `tsc` clean
   (apart from the pre-existing `create-parser.test.ts` error), `next lint` clean,
   `prettier --check` clean, `next build` OK (`/dashboard` is `ƒ` dynamic).
+
+## 2026-06-30 — Design refresh (cool/fresh material, token-first)
+
+Consumer-friendly visual refresh: the app felt too flat and "AI-safe". Moved to
+a warmer, depth-forward mobile feel — token-first, applied across the shell and
+key screens.
+
+- **D31 — Reverses the single-accent decision.** The earlier "single blue
+  accent, neutrals only" rule (D7-era, `app/globals.css`) is superseded by a
+  **semantic, multi-hue token system**: `--page/--surface/--surface-tint/--border`,
+  `--fg/--muted`, `--primary/--positive/--accent` (+ `-hover/-foreground`), and a
+  depth pair `--elevation` (mapped to the `shadow-soft` utility) + `--highlight-inner`.
+  `--accent*` is **retained but repointed to the teal family** so existing screens
+  (manual entry, receipt review) pick up the new hue without edits.
+- **D32 — Palette: cool/fresh teal–cyan, indigo only as background tint.**
+  Light primary is teal-700 (`#0F766E`) for AA contrast (~4.8:1 text, ~5.5:1 on
+  the white-on-button); dark primary is teal-300 (`#2DD4BF`) on tinted-dark
+  surfaces. Cyan accent, emerald positive. Indigo appears **only** as one
+  low-opacity background shape tint. Beige/sand was explicitly rejected.
+- **D33 — Depth via tint + shadow + overlap, never blur.** Cards use a faint
+  vertical surface tint, an inner top highlight, and a soft *tinted* shadow.
+  Background depth is three large, static, low-opacity `radial-gradient` blobs
+  (`components/ui/background-shapes.tsx`) kept deliberately subtler than the
+  cards. **No `backdrop-filter`/`blur` anywhere** — the old header/nav
+  `backdrop-blur` was removed — so mobile performance stays safe. Motion is a
+  single `rise` entrance keyframe gated behind `prefers-reduced-motion`.
+- **Scope this slice.** Tokens + two primitives (`Card`, `BackgroundShapes`),
+  the shell (`layout`, `app-header`, `app-nav`), and the key screens
+  (`/dashboard` with a richer hero stat + sparkline, the shared
+  `PlaceholderScreen` covering inbox/insights/settings, and the capture hub).
+  **Deferred (fast-follow):** the internal styling of the manual-entry and
+  receipt-review forms still uses `neutral-*` surfaces — they already adopt the
+  teal accent/focus via the `--accent` repoint, but their cards want the full
+  `Card`/token treatment next.
+- **Verification:** `next build` OK (9 routes), Vitest 122/122 (styling change,
+  no test impact), `next lint` clean, `prettier --check` clean.
