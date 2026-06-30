@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { hasMaxTwoDecimals } from "@/lib/domain/money";
+
 /**
  * Boundary validation for the header-only receipt review form (Slice 1).
  *
@@ -11,10 +13,6 @@ import { z } from "zod";
 const MAX_AMOUNT = 1_000_000;
 const MAX_TEXT = 200;
 const MAX_NOTES = 1000;
-
-function hasMaxTwoDecimals(value: number): boolean {
-  return Math.abs(value * 100 - Math.round(value * 100)) < 1e-9;
-}
 
 function optionalText(max: number) {
   return z.preprocess((value) => {

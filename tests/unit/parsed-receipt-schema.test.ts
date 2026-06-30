@@ -14,8 +14,9 @@ const valid = {
     {
       rawText: "MILK",
       name: "Milk",
-      price: 1.85,
       quantity: 1,
+      unitPrice: 1.85,
+      totalPrice: 1.85,
       confidence: 0.6,
     },
   ],
@@ -30,11 +31,11 @@ describe("parsedReceiptSchema", () => {
     expect(parsedReceiptSchema.safeParse({ lineItems: [] }).success).toBe(true);
   });
 
-  it("rejects a negative price", () => {
+  it("rejects a negative unit price", () => {
     expect(
       parsedReceiptSchema.safeParse({
         ...valid,
-        lineItems: [{ rawText: "X", price: -1 }],
+        lineItems: [{ rawText: "X", unitPrice: -1 }],
       }).success,
     ).toBe(false);
   });

@@ -1,4 +1,7 @@
 import { items, manualEntries } from "@/lib/db/schema";
+import { toNoonUtc } from "@/lib/domain/datetime";
+import { normalizeMerchant } from "@/lib/domain/merchant";
+import { toAmountString } from "@/lib/domain/money";
 import type { ManualEntryInput } from "@/lib/manual-entry/schema";
 
 /**
@@ -18,11 +21,6 @@ export interface ManualEntryRecords {
   items: NewItem[];
 }
 
-/** Format a single amount as a 2dp money string (e.g. 1.5 -> "1.50"). */
-export function toAmountString(amount: number): string {
-  return (Math.round(amount * 100) / 100).toFixed(2);
-}
-
 /** Sum amounts in integer pence (fp-safe), returning a 2dp money string. */
 export function sumToAmountString(amounts: readonly number[]): string {
   const pence = amounts.reduce(
@@ -30,24 +28,6 @@ export function sumToAmountString(amounts: readonly number[]): string {
     0,
   );
   return (pence / 100).toFixed(2);
-}
-
-/**
- * Resolve a date-only value (YYYY-MM-DD) to a timestamp at noon UTC. Noon keeps
- * the displayed calendar day stable across GMT/BST (Europe/London), since the
- * app stores UTC and renders Europe/London (decision D4).
- */
-export function toPurchaseDatetime(purchaseDate: string): Date {
-  return new Date(`${purchaseDate}T12:00:00.000Z`);
-}
-
-/**
- * Minimal merchant normalization placeholder for item-level analytics. Proper
- * alias normalization is a Milestone 5 concern; for now we lowercase + trim so
- * itemized manual items carry a usable merchant key.
- */
-function normalizeMerchant(merchant: string): string {
-  return merchant.trim().toLowerCase();
 }
 
 /**
@@ -62,7 +42,7 @@ function normalizeMerchant(merchant: string): string {
 export function buildManualEntryRecords(
   input: ManualEntryInput,
 ): ManualEntryRecords {
-  const purchaseDatetime = toPurchaseDatetime(input.purchaseDate);
+  const purchaseDatetime = toNoonUtc(input.purchaseDate);
   const merchant = input.merchant ?? null;
   const category = input.category ?? null;
   const notes = input.notes ?? null;

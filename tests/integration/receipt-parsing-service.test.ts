@@ -8,7 +8,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { AppDb } from "@/lib/db";
 import * as schema from "@/lib/db/schema";
 import { parseReceipt } from "@/lib/receipts/parsing/service";
-import { createStubReceiptParser } from "@/lib/receipts/parsing/stub-parser";
+import { createMockReceiptParser } from "@/lib/receipts/parsing/mock-parser";
 import type { ReceiptParser } from "@/lib/receipts/parsing/parser";
 
 const client = new PGlite();
@@ -55,7 +55,7 @@ describe("parseReceipt", () => {
   it("parses a pending receipt into header fields + item rows", async () => {
     const id = await insertPendingReceipt();
     const result = await parseReceipt(
-      { db, parser: createStubReceiptParser() },
+      { db, parser: createMockReceiptParser() },
       id,
     );
 
@@ -73,8 +73,8 @@ describe("parseReceipt", () => {
 
   it("is idempotent on re-parse (replaces items, no duplicates)", async () => {
     const id = await insertPendingReceipt();
-    await parseReceipt({ db, parser: createStubReceiptParser() }, id);
-    await parseReceipt({ db, parser: createStubReceiptParser() }, id);
+    await parseReceipt({ db, parser: createMockReceiptParser() }, id);
+    await parseReceipt({ db, parser: createMockReceiptParser() }, id);
     expect(await receiptItems(id)).toHaveLength(3);
   });
 
@@ -99,7 +99,7 @@ describe("parseReceipt", () => {
     const id = await insertPendingReceipt();
     const badParser: ReceiptParser = {
       async parse() {
-        return { lineItems: [{ rawText: "X", price: -5 }] };
+        return { lineItems: [{ rawText: "X", unitPrice: -5 }] };
       },
     };
 
@@ -122,7 +122,7 @@ describe("parseReceipt", () => {
       .where(eq(schema.receipts.id, id));
 
     const result = await parseReceipt(
-      { db, parser: createStubReceiptParser() },
+      { db, parser: createMockReceiptParser() },
       id,
     );
 

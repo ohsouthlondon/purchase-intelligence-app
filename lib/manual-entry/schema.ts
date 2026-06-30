@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { hasMaxTwoDecimals } from "@/lib/domain/money";
+
 /**
  * Boundary validation for the manual purchase entry flow (Slice 3).
  *
@@ -17,11 +19,6 @@ import { z } from "zod";
 const MAX_AMOUNT = 1_000_000;
 const MAX_TEXT = 200;
 const MAX_NOTES = 1000;
-
-/** True when `value` has at most two decimal places (fp-tolerant). */
-function hasMaxTwoDecimals(value: number): boolean {
-  return Math.abs(value * 100 - Math.round(value * 100)) < 1e-9;
-}
 
 /** A positive money amount with at most two decimal places. */
 const amountSchema = z.coerce

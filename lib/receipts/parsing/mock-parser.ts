@@ -1,15 +1,15 @@
 import type { ReceiptParser } from "@/lib/receipts/parsing/parser";
 
 /**
- * Deterministic placeholder parser (Milestone 2, Slice 1).
+ * Mock receipt parser (Milestone 2).
  *
- * Returns a fixed, internally consistent structured receipt **without reading
- * the image**. It exists only to exercise the parse → review → save seam end to
- * end before a real OCR provider is wired in (Slice 2), and must not ship as the
- * production parser. Values are deliberately low-confidence to reinforce that
- * the human review step is where the trustworthy record is created.
+ * Returns fixed, internally consistent structured receipt data **without reading
+ * the image**. It is the local/dev default and the fallback the live adapter
+ * degrades to when the provider is unavailable or fails (see `createReceiptParser`).
+ * Values are deliberately low-confidence to reinforce that the human review step
+ * is where the trustworthy record is created.
  */
-export function createStubReceiptParser(): ReceiptParser {
+export function createMockReceiptParser(): ReceiptParser {
   return {
     async parse() {
       return {
@@ -24,22 +24,25 @@ export function createStubReceiptParser(): ReceiptParser {
           {
             rawText: "MILK 2L",
             name: "Milk",
-            price: 1.85,
             quantity: 1,
+            unitPrice: 1.85,
+            totalPrice: 1.85,
             confidence: 0.6,
           },
           {
             rawText: "WHOLEMEAL BREAD",
             name: "Bread",
-            price: 1.1,
             quantity: 1,
+            unitPrice: 1.1,
+            totalPrice: 1.1,
             confidence: 0.55,
           },
           {
             rawText: "BANANAS LOOSE",
             name: "Bananas",
-            price: 1.35,
             quantity: 1,
+            unitPrice: 1.35,
+            totalPrice: 1.35,
             confidence: 0.4,
           },
         ],

@@ -17,10 +17,12 @@ Slice 2 app shell (nav + theme) → Slice 3 manual entry (E2E) → Slice 4 recei
 ## Milestone 2: Parsing workflow
 
 In slices: Slice 1 parse seam (stub) + header-only review scaffold →
-Slice 2 real OCR provider behind the seam → later slice line-item correction.
+Slice 2 live provider behind the seam (mock fallback) + auto-parse on upload →
+later slice line-item correction.
 
-- [ ] Integrate OCR/parsing service. _(Slice 1: parser seam + Zod-validated
-      contract + deterministic stub landed; real provider is Slice 2)_
+- [x] Integrate OCR/parsing service. _(Slice 2 — live HTTP adapter selected by
+      `createReceiptParser` with automatic mock fallback; upload auto-parses so
+      review opens pre-filled. Slice 1 landed the seam + Zod contract + mock.)_
 - [x] Build parsed receipt review screen. _(Slice 1 — header-only scaffold;
       line items read-only)_
 - [x] Allow merchant/date/total editing. _(Slice 1)_

@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
 
 import { parsedReceiptSchema } from "@/lib/receipts/parsing/parsed-receipt";
-import { createStubReceiptParser } from "@/lib/receipts/parsing/stub-parser";
+import { createMockReceiptParser } from "@/lib/receipts/parsing/mock-parser";
 
-describe("createStubReceiptParser", () => {
+describe("createMockReceiptParser", () => {
   it("returns deterministic output that satisfies the parsed schema", async () => {
-    const parser = createStubReceiptParser();
+    const parser = createMockReceiptParser();
     const first = await parser.parse({
       receiptId: "r1",
       imageReference: "receipts/a.jpg",

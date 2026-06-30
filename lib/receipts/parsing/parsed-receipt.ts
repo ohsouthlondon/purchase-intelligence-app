@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { hasMaxTwoDecimals } from "@/lib/domain/money";
+
 /**
  * Boundary contract for parser output (Milestone 2, Slice 1).
  *
@@ -13,11 +15,6 @@ import { z } from "zod";
 const MAX_AMOUNT = 1_000_000;
 const MAX_RAW_TEXT = 500;
 const MAX_NAME = 200;
-
-/** True when `value` has at most two decimal places (fp-tolerant). */
-function hasMaxTwoDecimals(value: number): boolean {
-  return Math.abs(value * 100 - Math.round(value * 100)) < 1e-9;
-}
 
 const moneyValue = z
   .number()
@@ -44,13 +41,17 @@ export const parsedLineItemSchema = z.object({
     .min(1, "Raw line text is required.")
     .max(MAX_RAW_TEXT),
   name: z.string().trim().max(MAX_NAME).nullable().optional(),
-  price: optionalMoney,
   quantity: z
     .number()
     .positive("Quantity must be greater than 0.")
     .max(MAX_AMOUNT)
     .nullable()
     .optional(),
+  // `unitPrice` is the per-unit price (persisted to `items.price`); `totalPrice`
+  // is the line total and is part of the contract for prefill/cross-checking,
+  // but is derived (not stored) until a line-item editing slice adds a column.
+  unitPrice: optionalMoney,
+  totalPrice: optionalMoney,
   confidence: optionalConfidence,
 });
 

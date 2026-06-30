@@ -1,4 +1,7 @@
 import { items, receipts } from "@/lib/db/schema";
+import { toNoonUtc } from "@/lib/domain/datetime";
+import { normalizeMerchant } from "@/lib/domain/merchant";
+import { toAmountString } from "@/lib/domain/money";
 import type { ParsedReceipt } from "@/lib/receipts/parsing/parsed-receipt";
 
 /**
@@ -13,20 +16,8 @@ import type { ParsedReceipt } from "@/lib/receipts/parsing/parsed-receipt";
 type ReceiptUpdate = Partial<typeof receipts.$inferInsert>;
 type NewItem = typeof items.$inferInsert;
 
-function toAmountString(amount: number): string {
-  return (Math.round(amount * 100) / 100).toFixed(2);
-}
-
 function toConfidenceString(value: number): string {
   return value.toFixed(4);
-}
-
-function toNoonUtc(dateIso: string): Date {
-  return new Date(`${dateIso}T12:00:00.000Z`);
-}
-
-function normalizeMerchant(merchant: string): string {
-  return merchant.trim().toLowerCase();
 }
 
 function money(value: number | null | undefined): string | null {
@@ -72,7 +63,8 @@ export function buildParsedItemRows(
     sourceType: "receipt",
     rawLineText: line.rawText,
     itemNameRaw: line.name ?? null,
-    price: money(line.price),
+    // Persist the per-unit price; the line total (`totalPrice`) is not stored yet.
+    price: money(line.unitPrice),
     quantityValue: line.quantity != null ? String(line.quantity) : null,
     confidence: confidence(line.confidence),
     merchantNameNormalized,

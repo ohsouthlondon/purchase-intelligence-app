@@ -241,3 +241,44 @@ no auth. No schema changes** — the existing `receipts`/`items` columns and the
   OK (10 routes; `/capture/receipt/[id]/review` server-rendered on demand),
   Playwright 7/7. The parse/review save paths are integration-covered, not e2e,
   because the test env has no `DATABASE_URL` (same rationale as Slices 1/3/4).
+
+## 2026-06-30 — Milestone 2, Slice 2
+
+Wire the receipt upload flow to a real parsing adapter with mocked extraction
+fallback. The Slice 1 seam (`ReceiptParser` port + Zod boundary + `parseReceipt`
+pipeline + review prefill) was reused as-is; this slice adds provider selection,
+the live adapter, the richer line-item contract, and auto-parse on upload.
+
+- **D19 — Provider selection is a composition root.** `createReceiptParser()`
+  (`lib/receipts/parsing/create-parser.ts`) is the only place that picks a
+  provider. With `RECEIPT_PARSER_API_URL` + `RECEIPT_PARSER_API_KEY` set it
+  returns the live HTTP adapter wrapped by `withFallback(...)`; unset, it returns
+  the mock directly. The UI and pipeline depend only on the `ReceiptParser`
+  port, so swapping providers never touches them.
+- **D20 — Fallback at the provider boundary, not over validation.**
+  `withFallback` catches a *thrown* live error (unavailable/timeout/non-2xx) and
+  degrades to mock output. If the live provider returns data that *fails*
+  `parsedReceiptSchema`, the pipeline still marks the receipt `failed` (D18) and
+  the review screen offers a re-parse — malformed live output is never masked
+  with mock data.
+- **D21 — Line-item contract enriched.** `parsedLineItem` is now
+  `{ rawText, name, quantity, unitPrice, totalPrice, confidence }`. `unitPrice`
+  persists to the existing `items.price`; `totalPrice` is part of the contract
+  for prefill/cross-checking but is **not** stored yet (no column — no migration
+  this slice). The Slice 1 `price` field was renamed to `unitPrice`.
+- **D22 — Auto-parse on upload (synchronous, best-effort).**
+  `submitReceiptUpload` runs `parseReceipt` with the selected parser immediately
+  after persisting the receipt, so the review screen opens pre-filled. It is
+  non-fatal: a parse failure is logged, the receipt is still saved `pending`,
+  and the review screen's "Parse receipt" button remains the retry path.
+  Background/async parsing is deliberately deferred (no jobs yet).
+- **Naming.** The Slice 1 `stub-parser` was renamed to `mock-parser`
+  (`createMockReceiptParser`) to match its role as the documented fallback.
+- **Env.** Live-provider vars are documented in `.env.example` and read only by
+  `live-parser.ts`; the feature works locally with neither set.
+- **Verification:** Vitest 85/85 (new: `create-parser` selection + `withFallback`
+  success/throw-fallback; mock determinism; schema/records/integration tests
+  updated to the new contract), `next lint` clean, `prettier --check` clean,
+  `next build` OK (10 routes; `/capture/receipt/[id]/review` server-rendered on
+  demand). Upload→parse→review is integration-covered (PGlite), not e2e, because
+  the test env has no `DATABASE_URL` (same rationale as prior slices).

@@ -18,8 +18,9 @@ const parsed = parsedReceiptSchema.parse({
     {
       rawText: "MILK",
       name: "Milk",
-      price: 1.85,
       quantity: 2,
+      unitPrice: 1.85,
+      totalPrice: 3.7,
       confidence: 0.6,
     },
   ],

@@ -2,6 +2,9 @@ import { eq } from "drizzle-orm";
 
 import type { AppDb } from "@/lib/db";
 import { receipts } from "@/lib/db/schema";
+import { toNoonUtc } from "@/lib/domain/datetime";
+import { normalizeMerchant } from "@/lib/domain/merchant";
+import { toAmountString } from "@/lib/domain/money";
 import type { ReviewReceiptInput } from "@/lib/receipts/review/schema";
 
 /**
@@ -12,20 +15,8 @@ import type { ReviewReceiptInput } from "@/lib/receipts/review/schema";
  * Line items are read-only in this slice, so they are left untouched here.
  */
 
-function toAmountString(amount: number): string {
-  return (Math.round(amount * 100) / 100).toFixed(2);
-}
-
 function money(value: number | undefined): string | null {
   return value == null ? null : toAmountString(value);
-}
-
-function toNoonUtc(dateIso: string): Date {
-  return new Date(`${dateIso}T12:00:00.000Z`);
-}
-
-function normalizeMerchant(merchant: string): string {
-  return merchant.trim().toLowerCase();
 }
 
 export async function saveReviewedReceipt(

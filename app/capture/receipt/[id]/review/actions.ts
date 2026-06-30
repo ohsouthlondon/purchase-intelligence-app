@@ -3,8 +3,8 @@
 import { revalidatePath } from "next/cache";
 
 import { getDb } from "@/lib/db";
+import { createReceiptParser } from "@/lib/receipts/parsing/create-parser";
 import { parseReceipt } from "@/lib/receipts/parsing/service";
-import { createStubReceiptParser } from "@/lib/receipts/parsing/stub-parser";
 import { reviewReceiptSchema } from "@/lib/receipts/review/schema";
 import { saveReviewedReceipt } from "@/lib/receipts/review/service";
 
@@ -13,8 +13,8 @@ import { saveReviewedReceipt } from "@/lib/receipts/review/service";
  *
  * The page reads the `id` from the dynamic segment and passes it explicitly as
  * the first argument, so the actions never depend on closure or routing magic.
- * Slice 1 uses the deterministic stub parser; Slice 2 swaps the real provider
- * behind the same `parseReceipt` seam.
+ * The parser is chosen by `createReceiptParser` (live provider with mock
+ * fallback, or mock when unconfigured), so this action is provider-agnostic.
  */
 
 export interface ReceiptActionResult {
@@ -28,7 +28,7 @@ export async function runParse(
 ): Promise<ReceiptActionResult> {
   try {
     const result = await parseReceipt(
-      { db: getDb(), parser: createStubReceiptParser() },
+      { db: getDb(), parser: createReceiptParser() },
       receiptId,
     );
     revalidatePath(`/capture/receipt/${receiptId}/review`);

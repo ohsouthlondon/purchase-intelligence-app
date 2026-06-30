@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
 
-import { manualEntryFormSchema } from "@/lib/manual-entry/schema";
+import { toNoonUtc } from "@/lib/domain/datetime";
+import { toAmountString } from "@/lib/domain/money";
 import {
   buildManualEntryRecords,
   sumToAmountString,
-  toAmountString,
-  toPurchaseDatetime,
 } from "@/lib/manual-entry/records";
+import { manualEntryFormSchema } from "@/lib/manual-entry/schema";
 
 /** Parse raw input the way the Server Action does before building records. */
 function parse(raw: unknown) {
@@ -25,9 +25,9 @@ describe("money helpers", () => {
   });
 });
 
-describe("toPurchaseDatetime", () => {
+describe("toNoonUtc", () => {
   it("resolves a date-only value to noon UTC", () => {
-    expect(toPurchaseDatetime("2026-06-29").toISOString()).toBe(
+    expect(toNoonUtc("2026-06-29").toISOString()).toBe(
       "2026-06-29T12:00:00.000Z",
     );
   });
