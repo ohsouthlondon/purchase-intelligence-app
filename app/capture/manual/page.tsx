@@ -13,7 +13,7 @@ export default function ManualEntryPage() {
         >
           ← Capture
         </Link>
-        <h1 className="text-2xl font-semibold tracking-tight">
+        <h1 className="text-xl font-semibold tracking-tight">
           Add manual entry
         </h1>
         <p className="text-sm text-neutral-500 dark:text-neutral-400">
