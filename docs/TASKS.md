@@ -42,7 +42,10 @@ Slice 3 parse-quality UX → Slice 4 line-item correction and deletion.
 
 ## Milestone 3: Dashboard
 
-- [ ] Build monthly spend summary.
+- [x] Build monthly spend summary. _(Slice 1 — `/dashboard` shows last-12-month
+      spend + purchase counts. Unified spend per D8a: reviewed receipt totals +
+      non-itemized manual amounts + manual item prices. Pure aggregation in
+      `lib/dashboard/spend.ts`, read layer in `lib/dashboard/queries.ts`.)_
 - [ ] Build merchant spend view.
 - [ ] Build category spend view.
 - [ ] Build item frequency table.

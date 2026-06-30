@@ -360,3 +360,41 @@ purely review-and-correct behaviour over the existing `receipts`/`items` tables.
   cases for editing into the payload, removal, and per-item error display),
   `next lint` clean, `prettier --check` clean. The same pre-existing
   `create-parser.test.ts` `tsc` error remains untouched.
+
+## 2026-06-30 — Milestone 3, Slice 1 (monthly spend summary)
+
+First dashboard view: `/dashboard` shows spend per month over the last 12
+months. Read-only over the existing tables — no schema changes, no new
+dependencies, deterministic aggregation only (no LLM).
+
+- **D28 — Unified spend realised as a query, not a DB view.** D3/D8a always
+  described a unified-spend "view"; for a single-user app the simplest correct
+  implementation is a read layer (`lib/dashboard/queries.ts`) that runs the
+  three arms and a pure aggregator (`lib/dashboard/spend.ts`) that buckets them.
+  No materialized/SQL view, so there is nothing to migrate. The arms are exactly
+  D8a: `receipts.total` + non-itemized `manual_entries.amount` + manual
+  `items.price`; itemized manual headers contribute count but not amount (their
+  items carry the amount), so itemized spend is counted once.
+- **D29 — Receipts count only once `reviewed`.** A `parsed`-but-unreviewed total
+  is an unconfirmed machine guess; including it would present unverified numbers
+  as spend (violating "never fabricate data"). Manual entries are user-authored
+  and always count. The dashboard therefore reflects reviewed receipts + all
+  manual entries. (Future option: a toggle to include unreviewed estimates,
+  clearly labelled.)
+- **D30 — Month bucketing by stored UTC year-month (no tz library).** Because
+  date-only captures are stored at noon UTC (D9), the UTC year-month equals the
+  displayed Europe/London month — noon never crosses a month boundary. Bucketing
+  is done in JS over fetched rows (tiny single-user dataset, KISS); the window is
+  bounded in SQL with a `>=` lower bound. Money is summed in integer pence
+  (fp-safe). The series is the last 12 months, newest-first, zero-filled.
+- **Purchase count.** One event per reviewed receipt and per manual entry
+  (itemized or not); manual item rows add amount only. Reviewed receipts with a
+  null total are excluded from both amount and count.
+- **UI.** Server-rendered (`force-dynamic`) total card + a Month/Spend/Purchases
+  table in the existing design system (no chart, no new deps); an empty state
+  shows when there is no spend yet rather than a wall of £0.00 rows.
+- **Verification:** Vitest 122/122 (new: `dashboard-spend` unit aggregation +
+  `dashboard-queries` PGlite integration covering the three arms, itemized-header
+  exclusion, unreviewed-receipt exclusion, and the window bound), `tsc` clean
+  (apart from the pre-existing `create-parser.test.ts` error), `next lint` clean,
+  `prettier --check` clean, `next build` OK (`/dashboard` is `ƒ` dynamic).
